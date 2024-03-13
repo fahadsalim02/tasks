@@ -19,6 +19,7 @@
     .container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
         gap: 20px;
         padding: 20px;
     }
@@ -91,24 +92,49 @@
 </div>
 
 <script>
+    // Load tasks from local storage
+    window.onload = function() {
+        for (let i = 1; i <= 4; i++) {
+            let savedTasks = localStorage.getItem("tasks" + i);
+            if (savedTasks) {
+                let tasks = JSON.parse(savedTasks);
+                tasks.forEach(task => {
+                    addTaskToList(i, task);
+                });
+            }
+        }
+    };
+
+    function addTaskToList(section, taskText) {
+        var listId = "taskList" + section;
+        var node = document.createElement("LI");
+        var textNode = document.createTextNode(taskText);
+        node.appendChild(textNode);
+        var removeBtn = document.createElement("button");
+        removeBtn.textContent = "x";
+        removeBtn.className = "remove-btn";
+        removeBtn.onclick = function() {
+            node.remove();
+            saveTasks(section);
+        };
+        node.appendChild(removeBtn);
+        document.getElementById(listId).appendChild(node);
+    }
+
     function addTask(section) {
         var inputId = "taskInput" + section;
-        var listId = "taskList" + section;
-        var inputValue = document.getElementById(inputId).value;
-        if (inputValue.trim() !== "") {
-            var node = document.createElement("LI");
-            var textNode = document.createTextNode(inputValue);
-            node.appendChild(textNode);
-            var removeBtn = document.createElement("button");
-            removeBtn.textContent = "x";
-            removeBtn.className = "remove-btn";
-            removeBtn.onclick = function() {
-                node.remove();
-            };
-            node.appendChild(removeBtn);
-            document.getElementById(listId).appendChild(node);
+        var inputValue = document.getElementById(inputId).value.trim();
+        if (inputValue !== "") {
+            addTaskToList(section, inputValue);
+            saveTasks(section);
             document.getElementById(inputId).value = "";
         }
+    }
+
+    function saveTasks(section) {
+        var listId = "taskList" + section;
+        var tasks = Array.from(document.getElementById(listId).getElementsByTagName("LI")).map(li => li.textContent);
+        localStorage.setItem("tasks" + section, JSON.stringify(tasks));
     }
 
     function changeHeading(section) {
